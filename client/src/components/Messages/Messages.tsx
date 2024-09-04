@@ -1,6 +1,13 @@
 import styles from './Messages.module.css';
+import { observer } from 'mobx-react-lite';
+import { webSocketStore } from '@/app/store/websoket.store.ts';
+import { toJS } from 'mobx';
 
-export const Messages = () => {
+export const Messages = observer(() => {
+  const message = webSocketStore.messages;
+
+  console.log(toJS(message));
+
   return (
     <div className={styles.messages}>
       {[].map(({ user, message }, i) => {
@@ -17,4 +24,4 @@ export const Messages = () => {
       })}
     </div>
   );
-};
+});

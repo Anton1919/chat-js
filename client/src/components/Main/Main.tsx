@@ -1,47 +1,71 @@
 import styles from './Main.module.css';
-import { useState } from 'react';
+import { ChangeEvent, MouseEvent, useState } from 'react';
 import { Link } from 'react-router-dom';
 
+const FIELDS = {
+  NAME: 'name',
+  ROOM: 'room',
+};
+
 export const Main = () => {
-  const [value, setValue] = useState('');
+  const { NAME, ROOM } = FIELDS;
+  const [values, setValue] = useState({ [NAME]: '', [ROOM]: '' });
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.currentTarget;
+    setValue({ ...values, [name]: value });
+  };
+
+  const handleClick = (e: MouseEvent) => {
+    const data = Object.values(values);
+    const isDisabled = data.some((v) => !v);
+
+    if (isDisabled) e.preventDefault();
+  };
 
   return (
-    <div className={styles.wrap}>
-      <div className={styles.container}>
-        <h1 className={styles.heading}>Join</h1>
+    <div className={styles.container}>
+      <div className={styles.wrap}>
+        <div className={styles.container}>
+          <h1 className={styles.heading}>Join</h1>
 
-        <form className={styles.form}>
-          <div className={styles.group}>
-            <input
-              type="text"
-              name="name"
-              value={value}
-              placeholder="Username"
-              className={styles.input}
-              onChange={() => {}}
-              autoComplete="off"
-              required
-            />
-          </div>
-          <div className={styles.group}>
-            <input
-              type="text"
-              name="room"
-              placeholder="Room"
-              value={value}
-              className={styles.input}
-              onChange={() => {}}
-              autoComplete="off"
-              required
-            />
-          </div>
+          <form className={styles.form}>
+            <div className={styles.group}>
+              <input
+                type="text"
+                name="name"
+                value={values[NAME]}
+                placeholder="Username"
+                className={styles.input}
+                onChange={handleChange}
+                autoComplete="off"
+                required
+              />
+            </div>
+            <div className={styles.group}>
+              <input
+                type="text"
+                name="room"
+                placeholder="Room"
+                value={values[ROOM]}
+                className={styles.input}
+                onChange={handleChange}
+                autoComplete="off"
+                required
+              />
+            </div>
 
-          <Link className={styles.group} onClick={() => {}} to={'#'}>
-            <button type="submit" className={styles.button}>
-              Sign In
-            </button>
-          </Link>
-        </form>
+            <Link
+              className={styles.group}
+              onClick={handleClick}
+              to={`/chat?name=${values[NAME]}&room=${values[ROOM]}`}
+            >
+              <button type="submit" className={styles.button}>
+                Sign In
+              </button>
+            </Link>
+          </form>
+        </div>
       </div>
     </div>
   );

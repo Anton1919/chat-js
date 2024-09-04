@@ -51,9 +51,3 @@ li {
   margin: 0;
   list-style: none;
 }
-
-.container {
-  width: 1240px;
-  margin: 0 auto;
-  min-height: 100vh;
-}

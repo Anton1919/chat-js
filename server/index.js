@@ -26,7 +26,7 @@ app.ws('/ws', (ws, req) => {
     console.log('Received message:', msg);
 
     // Отправка ответа обратно клиенту
-    ws.send(`Echo: ${msg}`);
+    ws.send(msg);
   });
 
   // Обработка закрытия соединения
