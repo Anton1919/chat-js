@@ -1,13 +1,14 @@
 import styles from './Main.module.css';
 import { ChangeEvent, MouseEvent, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { observer } from 'mobx-react-lite';
 
 const FIELDS = {
   NAME: 'name',
   ROOM: 'room',
 };
 
-export const Main = () => {
+export const Main = observer(() => {
   const { NAME, ROOM } = FIELDS;
   const [values, setValue] = useState({ [NAME]: '', [ROOM]: '' });
 
@@ -69,4 +70,4 @@ export const Main = () => {
       </div>
     </div>
   );
-};
+});

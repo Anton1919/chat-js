@@ -1,4 +1,5 @@
 import { makeAutoObservable } from 'mobx';
+import { IParams } from '@/shared/types/types.ts';
 
 class WebSocketStore {
   socket: WebSocket | null = null;
@@ -19,6 +20,7 @@ class WebSocketStore {
 
     this.socket.onmessage = (event) => {
       console.log('message:', event);
+      const data = JSON.parse(event.data);
       this.addMessage(event.data);
     };
 
@@ -32,14 +34,19 @@ class WebSocketStore {
     };
   }
 
+  sendUserInfo(user: IParams) {
+    if (this.socket && this.connected) {
+      this.socket.send(JSON.stringify({ type: 'userInfo', data: user }));
+    }
+  }
+
   addMessage(message: string) {
     this.messages.push(message);
   }
 
   sendMessage(message: string) {
     if (this.socket && this.connected) {
-      console.log('send');
-      this.socket.send(message);
+      this.socket.send(JSON.stringify({ type: 'message', data: message }));
     }
   }
 

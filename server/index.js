@@ -1,12 +1,8 @@
-const express = require('express')
-const cors = require('cors')
-const expressWs = require('express-ws');
-
-const _PORT_ = process.env.PORT || 8000;
-const route = require('./route')
-
-const app = express()
-expressWs(app);
+const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
+const { addUser, findUser } = require('./users');
+const cors = require('cors');
 
 const corsOptions = {
   origin: ['http://localhost:5173'],
@@ -14,35 +10,60 @@ const corsOptions = {
   credentials: true,
 };
 
+const _PORT_ = process.env.PORT || 8000;
+const route = require('./route');
+
+const app = express();
+const server = http.createServer(app);
+
 // middlewares
 app.use(cors(corsOptions));
 app.use(route);
 
-// Обработка WebSocket соединений
-app.ws('/ws', (ws, req) => {
-  console.log('websocket connection open');
+const io = new Server(server, {
+  cors: {
+    origin: ['http://localhost:5173'],
+    methods: ['GET', 'POST'],
+    credentials: true,
+  },
+});
 
-  ws.on('message', (msg) => {
-    console.log('Received message:', msg);
+io.on('connection', (socket) => {
+  socket.on('join', ({ name, room }) => {
+    socket.join(room);
 
-    // Отправка ответа обратно клиенту
-    ws.send(msg);
+    const { user } = addUser({ name, room });
+
+    socket.emit('message', {
+      data: { user: { name: 'Admin' }, message: `Hello ${user.name} !` },
+    });
+
+    socket.broadcast.to(user.room).emit('message', {
+      data: { user: { name: 'Admin' }, message: `${user.name} has joined` },
+    });
   });
 
-  // Обработка закрытия соединения
-  ws.on('close', () => {
-    console.log('WebSocket connection closed');
+  socket.on('sendMessage', ({ message, params }) => {
+    const user = findUser(params);
+
+    if (user) {
+      io.to(user.room).emit('message', { data: { user, message } });
+    }
+  });
+
+  io.on('disconnect', () => {
+    console.log('Disconnect');
   });
 });
 
 const startApp = async () => {
   try {
-    app.listen(_PORT_, () => {
+    server.listen(_PORT_, () => {
       console.log(`Server is ready on port: ${_PORT_}`);
     });
   } catch (e) {
-    console.log(e);
+    console.error(e);
   }
-}
+};
 
-startApp()
+startApp();
