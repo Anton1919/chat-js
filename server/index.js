@@ -1,7 +1,7 @@
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
-const { addUser, findUser } = require('./users');
+const { addUser, findUser, getRoomUsers, removeUser } = require('./users');
 const cors = require('cors');
 
 const corsOptions = {
@@ -32,15 +32,19 @@ io.on('connection', (socket) => {
   socket.on('join', ({ name, room }) => {
     socket.join(room);
 
-    const { user } = addUser({ name, room });
+    const { user, isExist } = addUser({ name, room });
+
+    const userMessage = isExist ? `${user.name}, here you go again` : `Hello ${user.name} !`;
 
     socket.emit('message', {
-      data: { user: { name: 'Admin' }, message: `Hello ${user.name} !` },
+      data: { user: { name: 'Admin' }, message: userMessage },
     });
 
     socket.broadcast.to(user.room).emit('message', {
       data: { user: { name: 'Admin' }, message: `${user.name} has joined` },
     });
+
+    io.to(user.room).emit('room', { data: { users: getRoomUsers(user.room) } });
   });
 
   socket.on('sendMessage', ({ message, params }) => {
@@ -48,6 +52,27 @@ io.on('connection', (socket) => {
 
     if (user) {
       io.to(user.room).emit('message', { data: { user, message } });
+    }
+  });
+
+  socket.on('leftRoom', ({ params }) => {
+    const user = removeUser(params);
+
+    if (user) {
+      const { room, name } = user;
+
+      io.to(room).emit('message', {
+        data: {
+          user: { name: 'Admin' },
+          message: `${name} has left room "${room}"`,
+        },
+      });
+
+      io.to(user.room).emit('room', {
+        data: {
+          users: getRoomUsers(room),
+        },
+      });
     }
   });
 
