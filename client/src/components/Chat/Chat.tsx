@@ -2,14 +2,13 @@ import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
 import { Messages } from '@/components/Messages/Messages.tsx';
 import iconSvg from '../../shared/emoji.svg';
 import styles from './Chat.module.css';
-import { observer } from 'mobx-react-lite';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { IChat, IParams } from '@/shared/types/types.ts';
 import { socket } from '@/app/api/api.ts';
 import EmojiPicker from 'emoji-picker-react';
 import { EmojiClickData } from 'emoji-picker-react/src/types/exposedTypes.ts';
 
-export const Chat = observer(() => {
+export const Chat = () => {
   const { search } = useLocation();
   const navigate = useNavigate();
   const [message, setMessage] = useState('');
@@ -87,17 +86,17 @@ export const Chat = observer(() => {
             <img src={iconSvg} alt="icon" onClick={() => setIsOpen(!isOpen)} />
 
             {isOpen && (
-              <div className={styles.emojies}>
+              <div className={styles.emojies} data-testid="emoji-picker">
                 <EmojiPicker onEmojiClick={onEmojiClick} />
               </div>
             )}
           </div>
 
           <div className={styles.button}>
-            <input type="submit" value="Send a message" />
+            <input type="submit" value="Send a message" data-testid="send-message" />
           </div>
         </form>
       </div>
     </div>
   );
-});
+};
